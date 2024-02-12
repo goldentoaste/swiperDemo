@@ -1,2 +1,16 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+    import CardList from "$lib/components/CardList.svelte";
+</script>
+
+<h2>(Use mobile mode in dev tool!)</h2>
+<CardList></CardList>
+
+<style>
+    h2 {
+        color: var(--bg3);
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>
