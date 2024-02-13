@@ -190,6 +190,8 @@
         height: var(--maxHeight);
 
         transform: translate(-50%, 0);
+
+        overscroll-behavior: none;
     }
 
     .itemHolder {
