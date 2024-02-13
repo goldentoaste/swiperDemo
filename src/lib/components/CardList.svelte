@@ -47,7 +47,6 @@
 
         if (res.ok) {
             items = await res.json();
-
             return items;
         }
     }
@@ -76,7 +75,7 @@
 
     function mouseup(e: MouseEvent | Touch) {
         clicked = false;
-        const dist = Math.abs($scrollOffset - iniPos) + stickyDist;
+        const dist = Math.abs($scrollOffset ) + stickyDist;
         if (
            dist >= scrollLimit ||
             dist / (new Date().getTime() - iniTime) > 1.1
