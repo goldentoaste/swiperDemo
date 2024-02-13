@@ -19,8 +19,8 @@
     let iniPos: number = 0;
     let iniTime = 0;
 
-    const damping = 0.25;
-    const stiffness = 0.04;
+    const damping = 0.45;
+    const stiffness = 0.08;
     let scrollOffset = spring(0, {
         damping: damping,
         stiffness: stiffness,
@@ -31,6 +31,8 @@
     let before;
     let current;
     let after;
+
+    let lock = false; // prevent interaction when lock is enabled
 
     onMount(() => {
         windowWidth = window.innerWidth;
@@ -44,7 +46,7 @@
 
         if (res.ok) {
             items = await res.json();
-          
+
             return items;
         }
     }
@@ -66,18 +68,22 @@
     }
 
     function mousedown(e: MouseEvent | Touch) {
+ 
         clicked = true;
         iniPos = e.clientY;
         iniTime = new Date().getTime();
     }
 
     function mouseup(e: MouseEvent | Touch) {
-        clicked = false;
 
+        clicked = false;
+        const dist = e.clientY - iniPos;
         if (
-            Math.abs($scrollOffset) >= scrollLimit ||
-            Math.abs($scrollOffset / (new Date().getTime() - iniTime)) > 1.1
+            Math.abs(dist) >= scrollLimit ||
+            Math.abs(dist / (new Date().getTime() - iniTime)) > 1.1
         ) {
+            // auto scrolling to next page
+            lock = true;
             $scrollOffset = Math.sign($scrollOffset) * windowHeight;
             reset();
         } else {
@@ -86,7 +92,7 @@
     }
 
     $: {
-        if (Math.abs(Math.abs($scrollOffset) - windowHeight) < 0.5) {
+        if (Math.abs(Math.abs($scrollOffset) - windowHeight) < 1) {
             scrollOffset.damping = 1;
             scrollOffset.stiffness = 1;
             index = clamp(
@@ -98,6 +104,8 @@
 
             scrollOffset.damping = damping;
             scrollOffset.stiffness = stiffness;
+            // done scrolling
+            lock = false;
         }
     }
 
@@ -112,8 +120,10 @@
     }
 </script>
 
+<h3>Lock: {lock}</h3>
 {#await getPictures() then res}
     <div
+    class:locked={lock}
         class="cardItemsContainer"
         style="--maxWidth:{windowWidth}px; --maxHeight:{windowHeight}px;"
         on:mousemove={mousemove}
@@ -121,12 +131,15 @@
         on:mousedown={mousedown}
         on:mouseleave={mouseup}
         on:touchstart={(event) => {
+        
             mousedown(event.touches[0]);
         }}
         on:touchend={(event) => {
+         
             mouseup(event.touches[0]);
         }}
         on:touchmove={(event) => {
+          
             mousemove(event.touches[0]);
         }}
     >
@@ -178,6 +191,9 @@
 {/await}
 
 <style>
+    .locked{
+        pointer-events: none;
+    }
     .cardItemsContainer {
         left: 50%;
         position: relative;
@@ -209,5 +225,10 @@
 
         top: 50%;
         transform: translate(0, -50%);
+        /* pointer-events: none; */
+    }
+
+    h3 {
+        position: absolute;
     }
 </style>
