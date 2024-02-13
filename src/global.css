@@ -36,6 +36,7 @@ body {
     margin: 0;
 
 
+    overscroll-behavior: none;
 }
 
 body:not(.noBackGround)::before {
@@ -98,7 +99,7 @@ iframe {
 
 .centerBox {
     position: fixed;
-    
+
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -109,12 +110,13 @@ iframe {
     gap: 0.5rem;
 
     border: solid 2px var(--fg2);
-    
+
     padding: 0.75rem;
 
 }
 
 
-div, nav {
+div,
+nav {
     box-sizing: border-box;
 }

@@ -21,6 +21,7 @@
 
     const damping = 0.45;
     const stiffness = 0.08;
+    const stickyDist = 80;
     let scrollOffset = spring(0, {
         damping: damping,
         stiffness: stiffness,
@@ -64,23 +65,21 @@
 
         $scrollOffset =
             Math.sign($scrollOffset) *
-            Math.max(0, Math.abs($scrollOffset) - 80);
+            Math.max(0, Math.abs($scrollOffset) - stickyDist);
     }
 
     function mousedown(e: MouseEvent | Touch) {
- 
         clicked = true;
         iniPos = e.clientY;
         iniTime = new Date().getTime();
     }
 
     function mouseup(e: MouseEvent | Touch) {
-
         clicked = false;
-        const dist = e.clientY - iniPos;
+        const dist = Math.abs($scrollOffset - iniPos) + stickyDist;
         if (
-            Math.abs(dist) >= scrollLimit ||
-            Math.abs(dist / (new Date().getTime() - iniTime)) > 1.1
+           dist >= scrollLimit ||
+            dist / (new Date().getTime() - iniTime) > 1.1
         ) {
             // auto scrolling to next page
             lock = true;
@@ -108,7 +107,7 @@
             lock = false;
         }
     }
-
+   
     function reset() {
         before && before.reset();
         current && current.reset();
@@ -123,7 +122,7 @@
 <h3>Lock: {lock}</h3>
 {#await getPictures() then res}
     <div
-    class:locked={lock}
+        class:locked={lock}
         class="cardItemsContainer"
         style="--maxWidth:{windowWidth}px; --maxHeight:{windowHeight}px;"
         on:mousemove={mousemove}
@@ -131,15 +130,12 @@
         on:mousedown={mousedown}
         on:mouseleave={mouseup}
         on:touchstart={(event) => {
-        
             mousedown(event.touches[0]);
         }}
         on:touchend={(event) => {
-         
             mouseup(event.touches[0]);
         }}
         on:touchmove={(event) => {
-          
             mousemove(event.touches[0]);
         }}
     >
@@ -191,7 +187,7 @@
 {/await}
 
 <style>
-    .locked{
+    .locked {
         pointer-events: none;
     }
     .cardItemsContainer {
@@ -206,8 +202,6 @@
         height: var(--maxHeight);
 
         transform: translate(-50%, 0);
-
-        overscroll-behavior: none;
     }
 
     .itemHolder {
