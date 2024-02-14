@@ -75,9 +75,9 @@
 
     function mouseup(e: MouseEvent | Touch) {
         clicked = false;
-        const dist = Math.abs($scrollOffset ) + stickyDist;
+        const dist = Math.abs($scrollOffset) + stickyDist;
         if (
-           dist >= scrollLimit ||
+            dist >= scrollLimit ||
             dist / (new Date().getTime() - iniTime) > 1.1
         ) {
             // auto scrolling to next page
@@ -106,7 +106,11 @@
             lock = false;
         }
     }
-   
+
+    $: if (Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.5) {
+        reset();
+    }
+
     function reset() {
         before && before.reset();
         current && current.reset();
@@ -140,6 +144,7 @@
     >
         {#if index > 0}
             <div
+                id={`${index - 1}`}
                 class="itemHolder"
                 style="--heightOffset:{$scrollOffset - windowHeight}px;"
             >
@@ -154,7 +159,11 @@
             </div>
         {/if}
 
-        <div class="itemHolder" style="--heightOffset:{$scrollOffset}px;">
+        <div
+            id={`${index}`}
+            class="itemHolder"
+            style="--heightOffset:{$scrollOffset}px;"
+        >
             <SwipeCard
                 bind:this={current}
                 cardWidth={windowWidth}
@@ -167,6 +176,7 @@
 
         {#if index < res.length - 1}
             <div
+                id={`${index + 1}`}
                 class="itemHolder"
                 style="--heightOffset:{$scrollOffset + windowHeight}px;"
             >
