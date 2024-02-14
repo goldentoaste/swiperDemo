@@ -10,21 +10,19 @@
         mag,
         sub,
     } from "$lib/util/vector";
-    import { onMount } from "svelte";
+    import { createEventDispatcher, onMount } from "svelte";
     import { spring } from "svelte/motion";
 
     export let cardWidth = 400;
     export let cardHeight = 700;
 
-   
     const rotPivotOffset = cardHeight * 2.2; // pivot distance, in px. (might need to be dynamic to screen size)
     const dragDistLimit = cardWidth / 2; // distance to trigger swipe at. in px;
     let iniPos: Vector = { x: 0, y: 0 };
     let displace: Vector = { x: 0, y: 0 };
-    let startTime : number = 0;
+    let startTime: number = 0;
     let done = false;
 
- 
     let springRot = spring(0, {
         stiffness: 0.05,
         damping: 0.3,
@@ -35,7 +33,6 @@
         damping: 0.3,
     });
 
-
     $: {
         const pivot = add(iniPos, mul(displace, 0.5));
         pivot.y += rotPivotOffset;
@@ -43,9 +40,8 @@
             angleBetween(iniPos, add(iniPos, displace), pivot) *
             (displace.x > 0 ? -1 : 1);
     }
-
-
     $: $springDisplace = displace; // set target for spring, render postion relative to spring.
+
     let cardRoot: HTMLDivElement;
     $: rect = cardRoot && cardRoot.getBoundingClientRect();
     let dragging = false;
@@ -56,33 +52,30 @@
     });
 
     function mousedown(e: MouseEvent | Touch) {
-        if(done)return;
+        if (done) return;
 
         selection.empty();
         iniPos = { x: e.clientX, y: e.clientY };
         displace = ZERO();
         dragging = true;
         startTime = new Date().getTime();
-
     }
     function mouseEscaped(e: MouseEvent | Touch) {
-        if(done)return;
+        if (done) return;
         dragging = false;
         iniPos = ZERO();
 
-        let vel = mag(displace) / (new Date().getTime() - startTime)
-     
-        
+        let vel = mag(displace) / (new Date().getTime() - startTime);
+
         if (Math.abs(displace.x) > dragDistLimit || vel > 1.2) {
             swipe();
         } else {
             displace = ZERO();
         }
-  
     }
 
     function mousemove(e: MouseEvent | Touch) {
-        if(done)return;
+        if (done) return;
         if (dragging) {
             displace.x = e.clientX - iniPos.x;
             displace.y = (e.clientY - iniPos.y) * 0.2;
@@ -90,11 +83,16 @@
     }
 
     function swipe() {
-        displace = imul(inorm(displace),Math. min(cardWidth, 600));
+        displace = imul(inorm(displace), Math.min(cardWidth, 600));
         done = true;
     }
 
-    export function reset(){
+    const dispatch = createEventDispatcher();
+
+
+
+
+    export function reset() {
         dragging = false;
         iniPos = ZERO();
         displace = ZERO();
@@ -176,7 +174,7 @@
         overflow: auto;
 
         /* weary - wish I knew this years ago */
-        
+
         scrollbar-width: none;
     }
 

@@ -42,7 +42,7 @@
 
     async function getPictures(): Promise<apiRes[]> {
         const res = await fetch(
-            "https://api.thecatapi.com/v1/images/search?limit=10",
+            "https://api.thedogapi.com/v1/images/search?limit=10",
         );
 
         if (res.ok) {
@@ -122,7 +122,6 @@
     }
 </script>
 
-<h3>Lock: {lock}</h3>
 {#await getPictures() then res}
     <div
         class:locked={lock}
