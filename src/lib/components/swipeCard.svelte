@@ -82,12 +82,14 @@
         }
     }
 
+    const dispatch = createEventDispatcher();
+
     function swipe() {
+        dispatch("swipe", Math.sign(displace.x) == 1 ? "left":"right");
         displace = imul(inorm(displace), Math.min(cardWidth, 600));
         done = true;
-    }
 
-    const dispatch = createEventDispatcher();
+    }
 
 
 

@@ -167,6 +167,7 @@
                 bind:this={current}
                 cardWidth={windowWidth}
                 cardHeight={windowHeight}
+                on:swipe={()=>{}}
             >
                 <!-- svelte-ignore a11y-missing-attribute -->
                 <img draggable="false" src={res[index].url} />
