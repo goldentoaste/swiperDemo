@@ -16,6 +16,8 @@
     export let cardWidth = 400;
     export let cardHeight = 700;
 
+    const stiffness = 0.06;
+    const damping = 0.3;
     const rotPivotOffset = cardHeight * 2.2; // pivot distance, in px. (might need to be dynamic to screen size)
     const dragDistLimit = cardWidth / 2; // distance to trigger swipe at. in px;
     let iniPos: Vector = { x: 0, y: 0 };
@@ -24,13 +26,13 @@
     let done = false;
 
     let springRot = spring(0, {
-        stiffness: 0.05,
-        damping: 0.3,
+        stiffness: stiffness,
+        damping:damping,
     });
 
     let springDisplace = spring(displace, {
-        stiffness: 0.06,
-        damping: 0.3,
+        stiffness: stiffness,
+        damping: damping,
     });
 
     $: {
@@ -85,19 +87,30 @@
     const dispatch = createEventDispatcher();
 
     function swipe() {
-        dispatch("swipe", Math.sign(displace.x) == 1 ? "left":"right");
+        dispatch("swipe", Math.sign(displace.x) == 1 ? "right" : "left");
         displace = imul(inorm(displace), Math.min(cardWidth, 600));
         done = true;
-
     }
-
-
-
 
     export function reset() {
         dragging = false;
+
+        springDisplace.stiffness = 1;
+        springDisplace.damping = 1;
+        springRot.stiffness = 1;
+        springRot.damping = 1;
+
         iniPos = ZERO();
         displace = ZERO();
+        $springDisplace = displace;
+
+        $springRot = 0;
+
+        springRot.stiffness = stiffness;
+        springRot.damping = damping;
+        springDisplace.stiffness = stiffness;
+        springDisplace.damping = damping;
+        
         done = false;
     }
 </script>
@@ -121,6 +134,7 @@
     }}
 >
     <div
+        class:done
         class="cardHolder"
         class:dragging
         style="--offsetX: {$springDisplace.x}px; --offsetY: {$springDisplace.y}px; --rot: {$springRot}rad;"
@@ -162,6 +176,11 @@
 </div>
 
 <style>
+    .done {
+        opacity: 0;
+        transition-duration: 200ms;
+    }
+
     .cardHolder {
         width: 100%;
         max-width: 500px;
@@ -170,7 +189,7 @@
         position: relative;
 
         transform: translate(var(--offsetX), var(--offsetY)) rotate(var(--rot));
-        transition-property: scale, border-color, border, border-radius;
+        transition-property: scale, border-color, border, border-radius, opacity;
         transition-duration: 100ms;
         transition-timing-function: ease-out;
         overflow: auto;

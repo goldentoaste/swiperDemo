@@ -34,7 +34,7 @@
     let after;
 
     let lock = false; // prevent interaction when lock is enabled
-
+    let advancing = false;
     onMount(() => {
         windowWidth = window.innerWidth;
         windowHeight = window.innerHeight - $navbarHeight;
@@ -42,7 +42,7 @@
 
     async function getPictures(): Promise<apiRes[]> {
         const res = await fetch(
-            "https://api.thedogapi.com/v1/images/search?limit=10",
+            "https://api.thecatapi.com/v1/images/search?limit=10",
         );
 
         if (res.ok) {
@@ -83,9 +83,13 @@
             // auto scrolling to next page
             lock = true;
             $scrollOffset = Math.sign($scrollOffset) * windowHeight;
-            reset();
+            // reset();
         } else {
-            $scrollOffset = 0;
+            if (!advancing){
+                console.log("wghy");
+                
+               $scrollOffset = 0;
+            }
         }
     }
 
@@ -93,22 +97,46 @@
         if (Math.abs(Math.abs($scrollOffset) - windowHeight) < 1) {
             scrollOffset.damping = 1;
             scrollOffset.stiffness = 1;
-            index = clamp(
-                0,
-                Math.sign(-$scrollOffset) + index,
-                items.length - 1,
-            );
+            checkIncrement();
             $scrollOffset = 0;
-
+            reset();
             scrollOffset.damping = damping;
             scrollOffset.stiffness = stiffness;
             // done scrolling
             lock = false;
+            advancing = false;
         }
     }
 
-    $: if (Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.5) {
-        reset();
+
+    $:console.log(index);
+    
+
+    // $: if (Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.5) {
+    //     reset();
+    // }
+
+    function checkIncrement(){
+
+            if (!advancing) {
+                index = clamp(
+                    0,
+                    Math.sign(-$scrollOffset) + index,
+                    items.length - 1,
+                );
+            }
+            else{index+=1; index -=1;}
+    }
+
+    function advance() {
+        
+        advancing = true;
+    
+        scrollOffset.stiffness = 0.06;
+        items.splice(index, 1);
+        $scrollOffset = -windowHeight;
+        console.log($scrollOffset, scrollOffset.stiffness, scrollOffset.damping);
+
     }
 
     function reset() {
@@ -167,7 +195,10 @@
                 bind:this={current}
                 cardWidth={windowWidth}
                 cardHeight={windowHeight}
-                on:swipe={()=>{}}
+                on:swipe={(e) => {
+
+                    advance();
+}}
             >
                 <!-- svelte-ignore a11y-missing-attribute -->
                 <img draggable="false" src={res[index].url} />
