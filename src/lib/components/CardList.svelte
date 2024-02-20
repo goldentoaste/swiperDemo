@@ -89,7 +89,7 @@
         if (
             !advancing &&
             (dist >= scrollLimit ||
-                (dist > 100 && dist / (new Date().getTime() - iniTime) > 1.1)) // (1.1px / sec)
+                (dist > 70 && dist / (new Date().getTime() - iniTime) > 1.1)) // (1.1px / sec)
         ) {
             // auto scrolling to next page
             lock = true;
