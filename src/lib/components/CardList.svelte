@@ -40,6 +40,8 @@
     let advancing = false;
     let loading = true;
 
+    $: console.log(lock);
+
     onMount(() => {
         windowWidth = window.innerWidth;
         windowHeight = window.innerHeight - $navbarHeight;
@@ -85,16 +87,15 @@
 
         const dist = Math.abs($scrollOffset) + stickyDist;
         if (
-            dist >= scrollLimit ||
-            dist / (new Date().getTime() - iniTime) > 1.1 // (1.1px / sec)
+            !advancing &&
+            (dist >= scrollLimit ||
+                (dist > 100 && dist / (new Date().getTime() - iniTime) > 1.1)) // (1.1px / sec)
         ) {
             // auto scrolling to next page
             lock = true;
             $scrollOffset = Math.sign($scrollOffset) * windowHeight;
-        } else {
-            if (!advancing) {
-                $scrollOffset = 0;
-            }
+        } else if (!advancing) {
+            $scrollOffset = 0;
         }
     }
 
@@ -152,6 +153,8 @@
         setTimeout(() => {
             advancing = true;
             lock = true;
+            console.log("yes");
+
             scrollOffset.stiffness = stiffness * 0.8;
             $scrollOffset = -windowHeight;
         }, 200);
@@ -278,5 +281,4 @@
         transform: translate(0, -50%);
         /* pointer-events: none; */
     }
-
 </style>

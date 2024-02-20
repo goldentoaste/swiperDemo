@@ -117,7 +117,7 @@
         if (notrans) {
             setTimeout(() => {
                 notrans = false;
-            }, 300);
+            }, 200);
         }
     }
 </script>
