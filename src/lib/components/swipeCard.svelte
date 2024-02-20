@@ -8,7 +8,6 @@
         inorm,
         imul,
         mag,
-        sub,
     } from "$lib/util/vector";
     import { createEventDispatcher, onMount } from "svelte";
     import { spring } from "svelte/motion";
@@ -24,10 +23,11 @@
     let displace: Vector = { x: 0, y: 0 };
     let startTime: number = 0;
     let done = false;
+    let notrans = false;
 
     let springRot = spring(0, {
         stiffness: stiffness,
-        damping:damping,
+        damping: damping,
     });
 
     let springDisplace = spring(displace, {
@@ -92,7 +92,9 @@
         done = true;
     }
 
-    export function reset() {
+    export function reset(instant = false) {
+        notrans = instant;
+
         dragging = false;
 
         springDisplace.stiffness = 1;
@@ -110,8 +112,13 @@
         springRot.damping = damping;
         springDisplace.stiffness = stiffness;
         springDisplace.damping = damping;
-        
+
         done = false;
+        if (notrans) {
+            setTimeout(() => {
+                notrans = false;
+            }, 300);
+        }
     }
 </script>
 
@@ -135,6 +142,7 @@
 >
     <div
         class:done
+        class:notrans
         class="cardHolder"
         class:dragging
         style="--offsetX: {$springDisplace.x}px; --offsetY: {$springDisplace.y}px; --rot: {$springRot}rad;"
@@ -142,6 +150,7 @@
         <slot />
 
         <div class="stats">
+            <span>No trans: {notrans}</span>
             <span>
                 curPos:({Math.round(displace.x)}, {Math.round(displace.y)})
             </span>
@@ -165,7 +174,6 @@
             style="top: {iniPos.y - rect.top}px; left: {iniPos.x -
                 rect.left}px;"
         />
-
         <div
             class="circle"
             style="top: {iniPos.y - rect.top + displace.y}px; left: {iniPos.x -
@@ -176,9 +184,12 @@
 </div>
 
 <style>
+    .notrans {
+        transition: none !important;
+    }
     .done {
         opacity: 0;
-        transition-duration: 200ms;
+        transition-duration: 300ms !important;
     }
 
     .cardHolder {
@@ -190,7 +201,7 @@
 
         transform: translate(var(--offsetX), var(--offsetY)) rotate(var(--rot));
         transition-property: scale, border-color, border, border-radius, opacity;
-        transition-duration: 100ms;
+        transition-duration: 200ms;
         transition-timing-function: ease-out;
         overflow: auto;
 
@@ -271,5 +282,6 @@
     .dragging > .stats {
         border-radius: 0 0 20px 0px;
         transition: border-radius 100ms ease-out;
+        
     }
 </style>

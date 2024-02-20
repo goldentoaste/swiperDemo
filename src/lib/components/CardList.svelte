@@ -18,7 +18,10 @@
     let clicked = false;
     let iniPos: number = 0;
     let iniTime = 0;
+    let isReset = false;
 
+    // const damping = 0.45;
+    // const stiffness = 0.01;
     const damping = 0.45;
     const stiffness = 0.08;
     const stickyDist = 80;
@@ -35,6 +38,8 @@
 
     let lock = false; // prevent interaction when lock is enabled
     let advancing = false;
+    let loading = true;
+
     onMount(() => {
         windowWidth = window.innerWidth;
         windowHeight = window.innerHeight - $navbarHeight;
@@ -46,7 +51,8 @@
         );
 
         if (res.ok) {
-            items = await res.json();
+            items = items.concat(await res.json());
+            loading = false;
             return items;
         }
     }
@@ -75,20 +81,19 @@
 
     function mouseup(e: MouseEvent | Touch) {
         clicked = false;
+        isReset = false;
+
         const dist = Math.abs($scrollOffset) + stickyDist;
         if (
             dist >= scrollLimit ||
-            dist / (new Date().getTime() - iniTime) > 1.1
+            dist / (new Date().getTime() - iniTime) > 1.1 // (1.1px / sec)
         ) {
             // auto scrolling to next page
             lock = true;
             $scrollOffset = Math.sign($scrollOffset) * windowHeight;
-            // reset();
         } else {
-            if (!advancing){
-                console.log("wghy");
-                
-               $scrollOffset = 0;
+            if (!advancing) {
+                $scrollOffset = 0;
             }
         }
     }
@@ -99,50 +104,63 @@
             scrollOffset.stiffness = 1;
             checkIncrement();
             $scrollOffset = 0;
-            reset();
+
             scrollOffset.damping = damping;
             scrollOffset.stiffness = stiffness;
             // done scrolling
             lock = false;
-            advancing = false;
+            isReset = false;
         }
     }
 
+    $: if (advancing && $scrollOffset == 0) {
+        reset(true);
+        items.splice(index, 1);
+        advancing = false;
+    }
 
-    $:console.log(index);
-    
+    $: if (
+        !advancing &&
+        !isReset &&
+        Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.5
+    ) {
+        reset(false);
+        isReset = true;
+    }
 
-    // $: if (Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.5) {
-    //     reset();
-    // }
+    $: {
+        if (!loading && items.length - index < 7) {
+            loading = true;
+            getPictures();
+        }
+    }
 
-    function checkIncrement(){
-
-            if (!advancing) {
-                index = clamp(
-                    0,
-                    Math.sign(-$scrollOffset) + index,
-                    items.length - 1,
-                );
-            }
-            else{index+=1; index -=1;}
+    function checkIncrement() {
+        if (!advancing) {
+            index = clamp(
+                0,
+                Math.sign(-$scrollOffset) + index,
+                items.length - 1,
+            );
+        } else {
+            index += 1;
+            index -= 1;
+        }
     }
 
     function advance() {
-        
-        advancing = true;
-    
-        scrollOffset.stiffness = 0.06;
-        items.splice(index, 1);
-        $scrollOffset = -windowHeight;
-        console.log($scrollOffset, scrollOffset.stiffness, scrollOffset.damping);
-
+        setTimeout(() => {
+            advancing = true;
+            lock = true;
+            scrollOffset.stiffness = stiffness * 0.8;
+            $scrollOffset = -windowHeight;
+        }, 200);
     }
 
-    function reset() {
-        before && before.reset();
-        current && current.reset();
-        after && after.reset();
+    function reset(instant = false) {
+        before && before.reset(instant);
+        current && current.reset(instant);
+        after && after.reset(instant);
     }
 
     function clamp(min, val, max) {
@@ -181,7 +199,7 @@
                     cardHeight={windowHeight}
                 >
                     <!-- svelte-ignore a11y-missing-attribute -->
-                    <img draggable="false" src={res[index - 1].url} />
+                    <img draggable="false" src={items[index - 1].url} />
                 </SwipeCard>
             </div>
         {/if}
@@ -196,16 +214,15 @@
                 cardWidth={windowWidth}
                 cardHeight={windowHeight}
                 on:swipe={(e) => {
-
                     advance();
-}}
+                }}
             >
                 <!-- svelte-ignore a11y-missing-attribute -->
-                <img draggable="false" src={res[index].url} />
+                <img draggable="false" src={items[index].url} />
             </SwipeCard>
         </div>
 
-        {#if index < res.length - 1}
+        {#if index < items.length - 1}
             <div
                 id={`${index + 1}`}
                 class="itemHolder"
@@ -217,7 +234,7 @@
                     cardHeight={windowHeight}
                 >
                     <!-- svelte-ignore a11y-missing-attribute -->
-                    <img draggable="false" src={res[index + 1].url} />
+                    <img draggable="false" src={items[index + 1].url} />
                 </SwipeCard>
             </div>
         {/if}
@@ -262,7 +279,4 @@
         /* pointer-events: none; */
     }
 
-    h3 {
-        position: absolute;
-    }
 </style>
