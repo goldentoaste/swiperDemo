@@ -40,7 +40,7 @@
     let advancing = false;
     let loading = true;
 
-    $: console.log(lock);
+   
 
     onMount(() => {
         windowWidth = window.innerWidth;
@@ -153,8 +153,6 @@
         setTimeout(() => {
             advancing = true;
             lock = true;
-            console.log("yes");
-
             scrollOffset.stiffness = stiffness * 0.8;
             $scrollOffset = -windowHeight;
         }, 200);
