@@ -85,7 +85,7 @@
         clicked = false;
         isReset = false;
 
-        const dist = Math.abs($scrollOffset) + stickyDist;
+        const dist = Math.abs(e.clientY - iniPos);
         if (
             !advancing &&
             (dist >= scrollLimit ||
