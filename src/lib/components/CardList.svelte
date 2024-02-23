@@ -17,7 +17,8 @@
 
     let clicked = false;
     let iniPos: number = 0;
-    let iniTime = 0;
+    let lastTime = 0;
+    let lastPos = 0;
     let isReset = false;
 
     // const damping = 0.45;
@@ -30,6 +31,8 @@
         stiffness: stiffness,
     });
 
+    let vel = 0;
+
     let items: apiRes[] = [];
 
     let before;
@@ -39,8 +42,6 @@
     let lock = false; // prevent interaction when lock is enabled
     let advancing = false;
     let loading = true;
-
-   
 
     onMount(() => {
         windowWidth = window.innerWidth;
@@ -73,25 +74,38 @@
         $scrollOffset =
             Math.sign($scrollOffset) *
             Math.max(0, Math.abs($scrollOffset) - stickyDist);
+
+        vel = Math.abs(e.clientY - lastPos) / (Date.now() - lastTime);
+        lastPos = e.clientY;
+        lastTime = Date.now();
     }
 
     function mousedown(e: MouseEvent | Touch) {
         clicked = true;
         iniPos = e.clientY;
-        iniTime = new Date().getTime();
+        lastPos = e.clientY;
+        lastTime = new Date().getTime();
+
+        if($scrollOffset == 0 ){
+            lock = false;
+            isReset = false;
+        }
     }
 
     function mouseup(e: MouseEvent | Touch) {
+        if(!clicked ){return}
+        
         clicked = false;
         isReset = false;
 
         const dist = Math.abs(e.clientY - iniPos);
         if (
-            !advancing &&
-            (dist >= scrollLimit ||
-                (dist > 70 && dist / (new Date().getTime() - iniTime) > 1.1)) // (1.1px / sec)
+            !advancing && !lock &&
+            (dist >= scrollLimit || (dist > 70 && vel > 2)) // (1.1px / sec)
         ) {
             // auto scrolling to next page
+            console.log(lock, dist >= scrollLimit , dist > 70 && vel > 2);
+            
             lock = true;
             $scrollOffset = Math.sign($scrollOffset) * windowHeight;
         } else if (!advancing) {
@@ -152,6 +166,8 @@
     function advance() {
         setTimeout(() => {
             advancing = true;
+            console.log('yeah');
+            
             lock = true;
             scrollOffset.stiffness = stiffness * 0.8;
             $scrollOffset = -windowHeight;
@@ -244,6 +260,21 @@
     <span>Error while fetching images: {err}</span>
 {/await}
 
+<div class="stats">
+    <span>
+        Vel: {Math.round(vel * 100)/100}
+    </span>
+
+    <span>
+        locked : {lock}
+    </span>
+
+
+    <span>
+        Resetting: {isReset}
+    </span>
+</div>
+
 <style>
     .locked {
         pointer-events: none;
@@ -278,5 +309,26 @@
         top: 50%;
         transform: translate(0, -50%);
         /* pointer-events: none; */
+    }
+
+    .stats {
+        position: absolute;
+        border: 2px solid var(--fg1);
+        padding: 0.5rem;
+
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        left: 0;
+        bottom: 0;
+
+        width: 180px;
+        height: fit-content;
+
+        /* transform: translate(-50%, 0); */
+        user-select: none;
+
+        background-color: var(--bg1);
     }
 </style>

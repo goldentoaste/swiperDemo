@@ -97,10 +97,12 @@
 
         dragging = false;
 
-        springDisplace.stiffness = 1;
-        springDisplace.damping = 1;
-        springRot.stiffness = 1;
-        springRot.damping = 1;
+        if (instant) {
+            springDisplace.stiffness = 1;
+            springDisplace.damping = 1;
+            springRot.stiffness = 1;
+            springRot.damping = 1;
+        }
 
         iniPos = ZERO();
         displace = ZERO();
@@ -182,6 +184,7 @@
         />
     {/if}
 </div>
+
 
 <style>
     .notrans {
@@ -282,6 +285,7 @@
     .dragging > .stats {
         border-radius: 0 0 20px 0px;
         transition: border-radius 100ms ease-out;
-        
     }
+
+
 </style>
