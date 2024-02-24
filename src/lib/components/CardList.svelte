@@ -82,13 +82,16 @@
 
     function mousedown(e: MouseEvent | Touch) {
         clicked = true;
+
+        isReset = false;
+
         iniPos = e.clientY;
         lastPos = e.clientY;
         lastTime = new Date().getTime();
 
         if($scrollOffset == 0 ){
             lock = false;
-            isReset = false;
+           
         }
     }
 
@@ -104,8 +107,6 @@
             (dist >= scrollLimit || (dist > 70 && vel > 2)) // (1.1px / sec)
         ) {
             // auto scrolling to next page
-            console.log(lock, dist >= scrollLimit , dist > 70 && vel > 2);
-            
             lock = true;
             $scrollOffset = Math.sign($scrollOffset) * windowHeight;
         } else if (!advancing) {
@@ -137,7 +138,7 @@
     $: if (
         !advancing &&
         !isReset &&
-        Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.5
+        Math.abs($scrollOffset) + stickyDist > scrollLimit * 0.4
     ) {
         reset(false);
         isReset = true;
