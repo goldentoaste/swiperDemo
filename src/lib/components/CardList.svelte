@@ -89,21 +89,23 @@
         lastPos = e.clientY;
         lastTime = new Date().getTime();
 
-        if($scrollOffset == 0 ){
+        if ($scrollOffset == 0) {
             lock = false;
-           
         }
     }
 
     function mouseup(e: MouseEvent | Touch) {
-        if(!clicked ){return}
-        
+        if (!clicked) {
+            return;
+        }
+
         clicked = false;
         isReset = false;
 
         const dist = Math.abs(e.clientY - iniPos);
         if (
-            !advancing && !lock &&
+            !advancing &&
+            !lock &&
             (dist >= scrollLimit || (dist > 70 && vel > 2)) // (1.1px / sec)
         ) {
             // auto scrolling to next page
@@ -166,7 +168,7 @@
 
     function advance() {
         setTimeout(() => {
-            advancing = true;  
+            advancing = true;
             lock = true;
             scrollOffset.stiffness = stiffness * 0.8;
             $scrollOffset = -windowHeight;
@@ -184,94 +186,74 @@
     }
 </script>
 
-{#await getPictures() then res}
-    <div
-        class:locked={lock}
-        class="cardItemsContainer"
-        style="--maxWidth:{windowWidth}px; --maxHeight:{windowHeight}px;"
-        on:mousemove={mousemove}
-        on:mouseup={mouseup}
-        on:mousedown={mousedown}
-        on:mouseleave={mouseup}
-        on:touchstart={(event) => {
-            mousedown(event.touches[0]);
-        }}
-        on:touchend={(event) => {
-            mouseup(event.touches[0]);
-        }}
-        on:touchmove={(event) => {
-            mousemove(event.touches[0]);
-        }}
-    >
-        {#if index > 0}
-            <div
-                id={`${index - 1}`}
-                class="itemHolder"
-                style="--heightOffset:{$scrollOffset - windowHeight}px;"
-            >
-                <SwipeCard
-                    bind:this={before}
-                    cardWidth={windowWidth}
-                    cardHeight={windowHeight}
-                >
-                    <!-- svelte-ignore a11y-missing-attribute -->
-                    <img draggable="false" src={items[index - 1].url} />
-                </SwipeCard>
-            </div>
-        {/if}
-
+<div
+    class:locked={lock}
+    class="cardItemsContainer"
+    style="--maxWidth:{windowWidth}px; --maxHeight:{windowHeight}px;"
+    on:mousemove={mousemove}
+    on:mouseup={mouseup}
+    on:mousedown={mousedown}
+    on:mouseleave={mouseup}
+    on:touchstart={(event) => {
+        mousedown(event.touches[0]);
+    }}
+    on:touchend={(event) => {
+        mouseup(event.touches[0]);
+    }}
+    on:touchmove={(event) => {
+        mousemove(event.touches[0]);
+    }}
+>
+    {#if index > 0}
         <div
-            id={`${index}`}
+            id={`${index - 1}`}
             class="itemHolder"
-            style="--heightOffset:{$scrollOffset}px;"
+            style="--heightOffset:{$scrollOffset - windowHeight}px;"
         >
             <SwipeCard
-                bind:this={current}
+                bind:this={before}
                 cardWidth={windowWidth}
                 cardHeight={windowHeight}
-                on:swipe={(e) => {
-                    advance();
-                }}
             >
-                <!-- svelte-ignore a11y-missing-attribute -->
-                <img draggable="false" src={items[index].url} />
+                <slot name="before" />
+              
             </SwipeCard>
         </div>
+    {/if}
 
-        {#if index < items.length - 1}
-            <div
-                id={`${index + 1}`}
-                class="itemHolder"
-                style="--heightOffset:{$scrollOffset + windowHeight}px;"
-            >
-                <SwipeCard
-                    bind:this={after}
-                    cardWidth={windowWidth}
-                    cardHeight={windowHeight}
-                >
-                    <!-- svelte-ignore a11y-missing-attribute -->
-                    <img draggable="false" src={items[index + 1].url} />
-                </SwipeCard>
-            </div>
-        {/if}
+    <div
+        id={`${index}`}
+        class="itemHolder"
+        style="--heightOffset:{$scrollOffset}px;"
+    >
+        <SwipeCard
+            bind:this={current}
+            cardWidth={windowWidth}
+            cardHeight={windowHeight}
+            on:swipe={(e) => {
+                advance();
+            }}
+        >
+            <slot name="after" />
+         
+        </SwipeCard>
     </div>
-{:catch err}
-    <span>Error while fetching images: {err}</span>
-{/await}
 
-<div class="stats">
-    <span>
-        Vel: {Math.round(vel * 100)/100}
-    </span>
-
-    <span>
-        locked : {lock}
-    </span>
-
-
-    <span>
-        Resetting: {isReset}
-    </span>
+    {#if index < items.length - 1}
+        <div
+            id={`${index + 1}`}
+            class="itemHolder"
+            style="--heightOffset:{$scrollOffset + windowHeight}px;"
+        >
+            <SwipeCard
+                bind:this={after}
+                cardWidth={windowWidth}
+                cardHeight={windowHeight}
+            >
+                <slot name="after" />
+            </SwipeCard>
+        </div>
+    {/if}
 </div>
 
 <style>
@@ -308,26 +290,5 @@
         top: 50%;
         transform: translate(0, -50%);
         /* pointer-events: none; */
-    }
-
-    .stats {
-        position: absolute;
-        border: 2px solid var(--fg1);
-        padding: 0.5rem;
-
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        left: 0;
-        bottom: 0;
-
-        width: 180px;
-        height: fit-content;
-
-        /* transform: translate(-50%, 0); */
-        user-select: none;
-
-        background-color: var(--bg1);
     }
 </style>

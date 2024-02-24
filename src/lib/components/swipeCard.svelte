@@ -15,7 +15,7 @@
     export let cardWidth = 400;
     export let cardHeight = 700;
 
-    const stiffness = 0.06;
+    const stiffness = 0.04;
     const damping = 0.3;
     const rotPivotOffset = cardHeight * 2.2; // pivot distance, in px. (might need to be dynamic to screen size)
     const dragDistLimit = cardWidth / 2; // distance to trigger swipe at. in px;
@@ -26,8 +26,8 @@
     let notrans = false;
 
     let springRot = spring(0, {
-        stiffness: stiffness,
-        damping: damping,
+        stiffness: 1,
+        damping: 1,
     });
 
     let springDisplace = spring(displace, {
@@ -151,40 +151,9 @@
     >
         <slot />
 
-        <div class="stats">
-            <span>No trans: {notrans}</span>
-            <span>
-                curPos:({Math.round(displace.x)}, {Math.round(displace.y)})
-            </span>
-
-            <span>IniPos:({Math.round(iniPos.x)}, {Math.round(iniPos.y)})</span>
-            <span
-                >SpringPos:({Math.round($springDisplace.x)}, {Math.round(
-                    $springDisplace.y,
-                )})
-            </span>
-            <span>
-                SpringRot: {Math.round(100 * $springRot * (180 / Math.PI)) /
-                    100} deg
-            </span>
-        </div>
     </div>
 
-    {#if cardRoot && dragging}
-        <div
-            class="circle"
-            style="top: {iniPos.y - rect.top}px; left: {iniPos.x -
-                rect.left}px;"
-        />
-        <div
-            class="circle"
-            style="top: {iniPos.y - rect.top + displace.y}px; left: {iniPos.x -
-                rect.left +
-                displace.x}px; border-color:var(--red);"
-        />
-    {/if}
 </div>
-
 
 <style>
     .notrans {
@@ -261,31 +230,6 @@
         cursor: grabbing;
     }
 
-    .stats {
-        position: absolute;
-        border: 2px solid var(--fg1);
-        padding: 0.5rem;
-
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-
-        right: 0;
-        bottom: 0;
-
-        width: 180px;
-        height: fit-content;
-
-        /* transform: translate(-50%, 0); */
-        user-select: none;
-
-        background-color: var(--bg1);
-    }
-
-    .dragging > .stats {
-        border-radius: 0 0 20px 0px;
-        transition: border-radius 100ms ease-out;
-    }
 
 
 </style>
