@@ -166,9 +166,7 @@
 
     function advance() {
         setTimeout(() => {
-            advancing = true;
-            console.log('yeah');
-            
+            advancing = true;  
             lock = true;
             scrollOffset.stiffness = stiffness * 0.8;
             $scrollOffset = -windowHeight;

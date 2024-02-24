@@ -80,7 +80,7 @@
         if (done) return;
         if (dragging) {
             displace.x = e.clientX - iniPos.x;
-            displace.y = (e.clientY - iniPos.y) * 0.2;
+            displace.y = (e.clientY - iniPos.y) * 0.3;
         }
     }
 
