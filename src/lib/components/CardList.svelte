@@ -256,6 +256,12 @@
     {/if}
 </div>
 
+<div class="stats">
+    <span>Advance: {advancing}</span>
+    <span></span>
+    <span>Index: {index}</span>
+</div>
+
 <style>
     .locked {
         pointer-events: none;
@@ -290,5 +296,26 @@
         top: 50%;
         transform: translate(0, -50%);
         /* pointer-events: none; */
+    }
+
+    .stats {
+        position: absolute;
+        border: 2px solid var(--fg1);
+        padding: 0.5rem;
+
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+
+        right: 0;
+        bottom: 0;
+
+        width: 180px;
+        height: fit-content;
+
+        /* transform: translate(-50%, 0); */
+        user-select: none;
+
+        background-color: var(--bg1);
     }
 </style>

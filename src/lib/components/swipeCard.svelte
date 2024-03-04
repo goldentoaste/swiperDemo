@@ -150,9 +150,7 @@
         style="--offsetX: {$springDisplace.x}px; --offsetY: {$springDisplace.y}px; --rot: {$springRot}rad;"
     >
         <slot />
-
     </div>
-
 </div>
 
 <style>
@@ -230,6 +228,26 @@
         cursor: grabbing;
     }
 
+    .stats {
+        position: absolute;
+        border: 2px solid var(--fg1);
+        padding: 0.5rem;
 
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
 
+        right: 0;
+        bottom: 0;
+
+        width: 180px;
+        height: fit-content;
+
+        /* transform: translate(-50%, 0); */
+        user-select: none;
+
+        background-color: var(--bg1);
+    }
+
+    
 </style>
