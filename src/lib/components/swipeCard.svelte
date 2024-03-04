@@ -1,3 +1,13 @@
+<script lang="ts" context="module">
+    export interface CardSwipeEvent {
+        right: boolean;
+    }
+
+    export interface CardSwipePending {
+        right: boolean;
+    }
+</script>
+
 <script lang="ts">
     import {
         ZERO,
@@ -11,6 +21,7 @@
     } from "$lib/util/vector";
     import { createEventDispatcher, onMount } from "svelte";
     import { spring } from "svelte/motion";
+    import type { SwipePendingArgs } from "./CardList.svelte";
 
     export let cardWidth = 400;
     export let cardHeight = 700;
@@ -48,13 +59,20 @@
     let dragging = false;
     let selection: Selection;
 
+    let pastDragLimit = false;
+
     onMount(() => {
         selection = document.getSelection();
     });
 
+    const dispatch = createEventDispatcher<{
+        swipe: CardSwipeEvent;
+        pendingSwipe: CardSwipePending;
+    }>();
+
     function mousedown(e: MouseEvent | Touch) {
         if (done) return;
-
+        pastDragLimit = false;
         selection.empty();
         iniPos = { x: e.clientX, y: e.clientY };
         displace = ZERO();
@@ -80,13 +98,20 @@
         if (dragging) {
             displace.x = e.clientX - iniPos.x;
             displace.y = (e.clientY - iniPos.y) * 0.3;
+
+            if (!pastDragLimit && Math.abs(displace.x) > dragDistLimit) {
+                pastDragLimit = true;
+                dispatch("pendingSwipe", {
+                    right: Math.sign(displace.x) == 1,
+                });
+            }
         }
     }
 
-    const dispatch = createEventDispatcher();
-
     function swipe() {
-        dispatch("swipe", Math.sign(displace.x) == 1 ? "right" : "left");
+        dispatch("swipe", {
+            right: Math.sign(displace.x) == 1,
+        });
         displace = imul(inorm(displace), Math.min(cardWidth, 600));
         done = true;
     }
@@ -190,7 +215,6 @@
         box-shadow: 0px 0px 20px 20px var(--bg3);
     }
 
-
     .cardRoot {
         border: 2px solid var(--bg3);
         position: relative;
@@ -233,6 +257,4 @@
 
         background-color: var(--bg1);
     }
-
-    
 </style>

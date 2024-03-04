@@ -1,15 +1,25 @@
+<script lang="ts" context="module">
+    export interface IndexChangedArgs {
+        index: number;
+    }
+
+    export interface SwipedArgs<T> {
+        index: number;
+        content: T;
+        right:boolean;
+    }
+    export interface SwipePendingArgs {
+        index: number;
+        right: boolean;
+    }
+</script>
+
 <script lang="ts" generics="T">
     import { createEventDispatcher, onMount } from "svelte";
     import SwipeCard from "./swipeCard.svelte";
     import { spring } from "svelte/motion";
     import { navbarHeight } from "$lib/stores/globals";
 
-    interface apiRes {
-        id: string;
-        url: string;
-        width: number;
-        height: number;
-    }
     export let width = 500;
     export let height = 1000;
     $: scrollLimit = height * 0.5;
@@ -46,9 +56,9 @@
     export let disableScroll = false;
 
     const dispatch = createEventDispatcher<{
-        indexChanged: { index: number };
-        swiped: { index: number; content: T };
-        pending: { index: number; right: boolean };
+        indexChanged: IndexChangedArgs;
+        swiped: SwipedArgs<T>;
+        pending: SwipePendingArgs;
     }>();
 
     onMount(() => {
@@ -160,12 +170,14 @@
                 Math.sign(-$scrollOffset) + index,
                 items.length - 1,
             );
+
+            dispatch("indexChanged", {
+                index,
+            });
         } else {
             index += 1;
             index -= 1;
         }
-
-        console.log(index);
     }
 
     function advance() {
@@ -229,6 +241,18 @@
             cardHeight={height}
             on:swipe={(e) => {
                 advance();
+                dispatch("swiped", {
+                    index,
+                    content:items[index],
+                    right:e.detail.right
+                })
+            }}
+
+            on:pendingSwipe={(e)=>{
+                dispatch("pending", {
+                    index,
+                    right:e.detail.right
+                })
             }}
         >
             <slot name="current" />
@@ -252,7 +276,6 @@
     <span>scroll pos: {$scrollOffset}</span>
     <span>Index: {index}</span>
 </div>
-
 
 <style>
     .locked {
