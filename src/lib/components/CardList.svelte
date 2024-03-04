@@ -6,7 +6,7 @@
     export interface SwipedArgs<T> {
         index: number;
         content: T;
-        right:boolean;
+        right: boolean;
     }
     export interface SwipePendingArgs {
         index: number;
@@ -148,11 +148,6 @@
         }
     }
 
-    $: if (advancing && $scrollOffset == 0) {
-        reset(true);
-        items.splice(index, 1);
-        advancing = false;
-    }
 
     $: if (
         !advancing &&
@@ -164,19 +159,22 @@
     }
 
     function checkIncrement() {
-        if (!advancing) {
+        if (advancing) {
+            items.splice(index, 1);
+            items = items;
+            index +=  1;
+            index -= 1;
+            reset(true);
+            advancing = false;
+        } else {
             index = clamp(
                 0,
                 Math.sign(-$scrollOffset) + index,
                 items.length - 1,
             );
-
             dispatch("indexChanged", {
                 index,
             });
-        } else {
-            index += 1;
-            index -= 1;
         }
     }
 
@@ -243,16 +241,15 @@
                 advance();
                 dispatch("swiped", {
                     index,
-                    content:items[index],
-                    right:e.detail.right
-                })
+                    content: items[index],
+                    right: e.detail.right,
+                });
             }}
-
-            on:pendingSwipe={(e)=>{
+            on:pendingSwipe={(e) => {
                 dispatch("pending", {
                     index,
-                    right:e.detail.right
-                })
+                    right: e.detail.right,
+                });
             }}
         >
             <slot name="current" />

@@ -21,7 +21,6 @@
     } from "$lib/util/vector";
     import { createEventDispatcher, onMount } from "svelte";
     import { spring } from "svelte/motion";
-    import type { SwipePendingArgs } from "./CardList.svelte";
 
     export let cardWidth = 400;
     export let cardHeight = 700;

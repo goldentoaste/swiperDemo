@@ -1,17 +1,17 @@
 <script lang="ts">
-    import CardList from "$lib/components/CardList.svelte";
+    import CardList, { type SwipedArgs } from "$lib/components/CardList.svelte";
 
     let index = 0;
     let items = ["abc", "def", "ghi", "stuff", "other", "beep boop", "yeah"];
 
-
-    function swiped(args = CardList){
-
+    function swiped(args: CustomEvent<SwipedArgs<String>>) {
+        console.log(args.detail.index);
+     
     }
 </script>
 
 <h2>(Use mobile mode in dev tool!)</h2>
-<CardList bind:index {items} on:swiped={}>
+<CardList bind:index {items} on:swiped={swiped}>
     <div slot="before">
         <h3>Before: {index - 1}</h3>
     </div>
@@ -20,11 +20,12 @@
         <h3>Current: {index}</h3>
         <h3>Content: {items[index]}</h3>
 
-        <button on:click={(e) => {
-            e.stopPropagation();
-            console.log("haha");
-            
-        }}>Click me</button>
+        <button
+            on:click={(e) => {
+                e.stopPropagation();
+                console.log("haha");
+            }}>Click me</button
+        >
     </div>
 
     <div slot="after">
