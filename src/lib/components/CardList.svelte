@@ -13,7 +13,7 @@
     let windowWidth = 0;
     let windowHeight = 1000;
     $: scrollLimit = windowHeight * 0.5;
-    let index = 0;
+    export let index = 0;
 
     let clicked = false;
     let iniPos: number = 0;
@@ -33,7 +33,7 @@
 
     let vel = 0;
 
-    let items: apiRes[] = [];
+   export let items: apiRes[] = [];
 
     let before;
     let current;
@@ -216,7 +216,6 @@
                 cardHeight={windowHeight}
             >
                 <slot name="before" />
-              
             </SwipeCard>
         </div>
     {/if}
@@ -234,8 +233,7 @@
                 advance();
             }}
         >
-            <slot name="after" />
-         
+            <slot name="current" />
         </SwipeCard>
     </div>
 
@@ -255,7 +253,9 @@
         </div>
     {/if}
 </div>
-
+<div class="stats">
+    <span>scroll pos: {$scrollOffset}</span>
+</div>
 <style>
     .locked {
         pointer-events: none;
@@ -290,5 +290,18 @@
         top: 50%;
         transform: translate(0, -50%);
         /* pointer-events: none; */
+    }
+
+    .stats {
+        display: flex;
+        flex-direction: column;
+
+        position: absolute;
+        left: 0;
+        bottom:0;
+
+        padding: 0.5rem;
+        border: 2px solid var(--fg1);
+        background-color: var(--bg2);
     }
 </style>
