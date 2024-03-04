@@ -45,7 +45,6 @@
     $: $springDisplace = displace; // set target for spring, render postion relative to spring.
 
     let cardRoot: HTMLDivElement;
-    $: rect = cardRoot && cardRoot.getBoundingClientRect();
     let dragging = false;
     let selection: Selection;
 

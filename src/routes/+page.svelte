@@ -2,18 +2,34 @@
     import CardList from "$lib/components/CardList.svelte";
 
     let index = 0;
+let items = [
+    "abc",
+    "def",
+    "ghi",
+    "stuff",
+    "other",
+    "beep boop",
+    "yeah"
+]
 </script>
 
+
+
+
+
 <h2>(Use mobile mode in dev tool!)</h2>
-<CardList bind:index items={[1, 2, 3]}>
+<CardList bind:index {items}>
     <div slot="before">
-    <h1>{index - 1}</h1>
-</div>
-    <div slot="current">
-        <h1>{index}</h1>
+        <h3>Before: {index - 1}</h3>
     </div>
+
+    <div slot="current">
+        <h3>Current: {index}</h3>
+    </div>
+
     <div slot="after">
-        <h1>{index + 1}</h1>
+        <h3>After: {index + 1}</h3>
+
     </div>
 </CardList>
 

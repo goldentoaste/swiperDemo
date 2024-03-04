@@ -247,12 +247,12 @@
         </div>
     {/if}
 </div>
-
 <div class="stats">
     <span>Advance: {advancing}</span>
-    <span></span>
+    <span>scroll pos: {$scrollOffset}</span>
     <span>Index: {index}</span>
 </div>
+
 
 <style>
     .locked {
