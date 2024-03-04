@@ -191,20 +191,6 @@
         box-shadow: 0px 0px 20px 20px var(--bg3);
     }
 
-    .circle {
-        border: 3px solid var(--fg1);
-        background-color: var(--bg4);
-        border-radius: 50%;
-
-        width: 2rem;
-        height: 2rem;
-
-        position: absolute;
-        transform: translate(-50%, -50%);
-        user-select: none;
-
-        pointer-events: none;
-    }
 
     .cardRoot {
         border: 2px solid var(--bg3);

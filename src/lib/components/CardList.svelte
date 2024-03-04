@@ -1,5 +1,5 @@
-<script lang="ts">
-    import { onMount } from "svelte";
+<script lang="ts" generics="T">
+    import { createEventDispatcher, onMount } from "svelte";
     import SwipeCard from "./swipeCard.svelte";
     import { spring } from "svelte/motion";
     import { navbarHeight } from "$lib/stores/globals";
@@ -10,10 +10,10 @@
         width: number;
         height: number;
     }
-    let windowWidth = 0;
-    let windowHeight = 1000;
-    $: scrollLimit = windowHeight * 0.5;
-    let index = 0;
+    export let width = 500;
+    export let height = 1000;
+    $: scrollLimit = height * 0.5;
+    export let index = 0;
 
     let clicked = false;
     let iniPos: number = 0;
@@ -33,7 +33,7 @@
 
     let vel = 0;
 
-    let items: apiRes[] = [];
+    export let items: T[];
 
     let before;
     let current;
@@ -41,31 +41,27 @@
 
     let lock = false; // prevent interaction when lock is enabled
     let advancing = false;
-    let loading = true;
+
+    // TODO implement the following flags
+    export let disableScroll = false;
+
+    const dispatch = createEventDispatcher<{
+        indexChanged: { index: number };
+        swiped: { index: number; content: T };
+        pending: { index: number; right: boolean };
+    }>();
 
     onMount(() => {
-        windowWidth = window.innerWidth;
-        windowHeight = window.innerHeight - $navbarHeight;
+        width = window.innerWidth;
+        height = window.innerHeight - $navbarHeight;
     });
-
-    async function getPictures(): Promise<apiRes[]> {
-        const res = await fetch(
-            "https://api.thecatapi.com/v1/images/search?limit=10",
-        );
-
-        if (res.ok) {
-            items = items.concat(await res.json());
-            loading = false;
-            return items;
-        }
-    }
 
     function mousemove(e: MouseEvent | Touch) {
         if (!clicked) return;
 
         if (index == 0) {
             $scrollOffset = Math.min(0, e.clientY - iniPos);
-        } else if (index == items.length) {
+        } else if (index == items.length - 1) {
             $scrollOffset = Math.max(0, e.clientY - iniPos);
         } else {
             $scrollOffset = e.clientY - iniPos;
@@ -81,6 +77,9 @@
     }
 
     function mousedown(e: MouseEvent | Touch) {
+        if (disableScroll) {
+            return;
+        }
         clicked = true;
 
         isReset = false;
@@ -106,18 +105,25 @@
         if (
             !advancing &&
             !lock &&
-            (dist >= scrollLimit || (dist > 70 && vel > 2)) // (1.1px / sec)
+            (dist >= scrollLimit || (dist > 70 && vel > 2)) // change limits here
         ) {
+            console.log(
+                !advancing,
+                !lock,
+                dist >= scrollLimit,
+                dist > 70 && vel > 2,
+            );
+
             // auto scrolling to next page
             lock = true;
-            $scrollOffset = Math.sign($scrollOffset) * windowHeight;
+            $scrollOffset = Math.sign($scrollOffset) * height;
         } else if (!advancing) {
             $scrollOffset = 0;
         }
     }
 
     $: {
-        if (Math.abs(Math.abs($scrollOffset) - windowHeight) < 1) {
+        if (Math.abs(Math.abs($scrollOffset) - height) < 1) {
             scrollOffset.damping = 1;
             scrollOffset.stiffness = 1;
             checkIncrement();
@@ -125,6 +131,7 @@
 
             scrollOffset.damping = damping;
             scrollOffset.stiffness = stiffness;
+
             // done scrolling
             lock = false;
             isReset = false;
@@ -146,13 +153,6 @@
         isReset = true;
     }
 
-    $: {
-        if (!loading && items.length - index < 7) {
-            loading = true;
-            getPictures();
-        }
-    }
-
     function checkIncrement() {
         if (!advancing) {
             index = clamp(
@@ -164,6 +164,8 @@
             index += 1;
             index -= 1;
         }
+
+        console.log(index);
     }
 
     function advance() {
@@ -171,7 +173,7 @@
             advancing = true;
             lock = true;
             scrollOffset.stiffness = stiffness * 0.8;
-            $scrollOffset = -windowHeight;
+            $scrollOffset = -height;
         }, 200);
     }
 
@@ -189,7 +191,7 @@
 <div
     class:locked={lock}
     class="cardItemsContainer"
-    style="--maxWidth:{windowWidth}px; --maxHeight:{windowHeight}px;"
+    style="--maxWidth:{width}px; --maxHeight:{height}px;"
     on:mousemove={mousemove}
     on:mouseup={mouseup}
     on:mousedown={mousedown}
@@ -208,15 +210,10 @@
         <div
             id={`${index - 1}`}
             class="itemHolder"
-            style="--heightOffset:{$scrollOffset - windowHeight}px;"
+            style="--heightOffset:{$scrollOffset - height}px;"
         >
-            <SwipeCard
-                bind:this={before}
-                cardWidth={windowWidth}
-                cardHeight={windowHeight}
-            >
+            <SwipeCard bind:this={before} cardWidth={width} cardHeight={height}>
                 <slot name="before" />
-              
             </SwipeCard>
         </div>
     {/if}
@@ -228,14 +225,13 @@
     >
         <SwipeCard
             bind:this={current}
-            cardWidth={windowWidth}
-            cardHeight={windowHeight}
+            cardWidth={width}
+            cardHeight={height}
             on:swipe={(e) => {
                 advance();
             }}
         >
-            <slot name="after" />
-         
+            <slot name="current" />
         </SwipeCard>
     </div>
 
@@ -243,13 +239,9 @@
         <div
             id={`${index + 1}`}
             class="itemHolder"
-            style="--heightOffset:{$scrollOffset + windowHeight}px;"
+            style="--heightOffset:{$scrollOffset + height}px;"
         >
-            <SwipeCard
-                bind:this={after}
-                cardWidth={windowWidth}
-                cardHeight={windowHeight}
-            >
+            <SwipeCard bind:this={after} cardWidth={width} cardHeight={height}>
                 <slot name="after" />
             </SwipeCard>
         </div>
@@ -285,6 +277,7 @@
         transform: translate(0, var(--heightOffset));
     }
 
+    /* TODO move these later */
     img {
         user-select: none;
         max-width: 100%;
