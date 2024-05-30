@@ -91,7 +91,6 @@
 
         if($scrollOffset == 0 ){
             lock = false;
-           
         }
     }
 
@@ -100,15 +99,17 @@
         
         clicked = false;
         isReset = false;
-
-        const dist = Math.abs(e.clientY - iniPos);
+   
+        const dist = Math.abs(lastPos - iniPos);
+        console.log(vel);
+        
         if (
             !advancing && !lock &&
-            (dist >= scrollLimit || (dist > 70 && vel > 2)) // (1.1px / sec)
+            (dist >= scrollLimit || (dist > 40 && vel > 0.4)) // (1.1px / sec)
         ) {
             // auto scrolling to next page
             lock = true;
-            $scrollOffset = Math.sign($scrollOffset) * windowHeight;
+            $scrollOffset = Math.sign(lastPos - iniPos) * windowHeight;
         } else if (!advancing) {
             $scrollOffset = 0;
         }
@@ -186,7 +187,7 @@
 
 {#await getPictures() then res}
     <div
-        class:locked={lock}
+       
         class="cardItemsContainer"
         style="--maxWidth:{windowWidth}px; --maxHeight:{windowHeight}px;"
         on:mousemove={mousemove}
@@ -233,6 +234,7 @@
                     advance();
                 }}
             >
+       
                 <!-- svelte-ignore a11y-missing-attribute -->
                 <img draggable="false" src={items[index].url} />
             </SwipeCard>
